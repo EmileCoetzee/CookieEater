@@ -6,6 +6,7 @@ function love.load()
     cookiePocketImage:setFilter("nearest", "nearest")
     cookieImage = love.graphics.newImage("assets/cookiee.png")
     cookieImage:setFilter("nearest", "nearest")
+    math.randomseed(os.time()) --seed random generator as Lua's RNG is deterministic
     cookie = generateCookie()
     listOfRectangles = {
         {
@@ -25,7 +26,6 @@ function love.load()
     positionHistory = {}
     prevXPoint = 0 
     prevYPoint = 0
-
 end
 
 function createRect()
@@ -74,12 +74,13 @@ function generateCookie()
     }
 end
 
-function detectSelfCollision(cookieEater)
-    local head = cookieEater[1]
-    print(head)
-end
+-- function detectSelfCollision(cookieEater)
+--     local head = cookieEater[1]
+--     print(head)
+-- end
 
 function love.update(dt)
+
     --check for out of bounds of screen
     if (detectWallCollision(listOfRectangles[1].x, listOfRectangles[1].y)) then 
         gameOver = true
@@ -89,15 +90,15 @@ function love.update(dt)
     --check for cookie eater head and cookie collision
     if (detectEat(listOfRectangles[1])) then
         score = score + 1
-        generateCookie()
+        cookie = generateCookie()
         createRect()
     end
 
     --check for cookie eater self-collision
-    if (detectSelfCollision(listOfRectangles)) then
-        gameOver = true
-        return
-    end
+    -- if (detectSelfCollision(listOfRectangles)) then
+    --     gameOver = true
+    --     return
+    -- end
 
     for i = 2, #listOfRectangles do
         local position = rectPositionHistory[i - 1]
@@ -131,8 +132,8 @@ function love.update(dt)
 
     --create history of this point when the head has moved 15 pixels
     local distanceX = listOfRectangles[1].x - prevXPoint
-    local distancyY = listOfRectangles[1].y - prevYPoint
-    local distanceBetweenPoints = math.sqrt(distanceX*distanceX + distancyY*distancyY)
+    local distanceY = listOfRectangles[1].y - prevYPoint
+    local distanceBetweenPoints = math.sqrt(distanceX*distanceX + distanceY*distanceY)
 
     if distanceBetweenPoints >= 15 then
         table.insert(rectPositionHistory, 1, {x = listOfRectangles[1].x, y = listOfRectangles[1].y})
