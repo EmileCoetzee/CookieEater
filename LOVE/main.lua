@@ -1,13 +1,16 @@
 function love.load()
     --image assets
-    cookieEaterImage = love.graphics.newImage("assets/cookieEaterHead.png")
+    cookieEaterImage = love.graphics.newImage("assets/cookieEaterHead2.png")
     cookieEaterImage:setFilter("nearest", "nearest")
     cookiePocketImage = love.graphics.newImage("assets/cookiePocket.png")
     cookiePocketImage:setFilter("nearest", "nearest")
-    cookieImage = love.graphics.newImage("assets/cookie.png")
+    cookieImage = love.graphics.newImage("assets/cookiee.png")
     cookieImage:setFilter("nearest", "nearest")
-    cookieImageScaleX = 50 / cookieImage:getWidth()
-    cookieImageScaleY = 50 / cookieImage:getHeight()
+    cookie = {
+        image = cookieImage,
+        x = 100,
+        y = 100
+    }
     listOfRectangles = {
         {
         image = cookieEaterImage,
@@ -41,12 +44,45 @@ function createRect()
     table.insert(listOfRectangles, rect)
 end
 
+function detectWallCollision(x, y)
+    if ((x > love.graphics.getWidth() - 30) or x < 0 or y > (love.graphics.getHeight() - 30) or y < 0) then
+        return true
+    end
+
+    return false
+end
+
+function detectEat(cookieEaterHead)
+    local width = cookieEaterHead.width
+    local height = cookieEaterHead.height
+    local x = cookieEaterHead.x
+    local y = cookieEaterHead.y
+
+    if (x < cookie.x + cookie.image:getWidth()
+        and cookie.x < x + width
+        and y < cookie.y + cookie.image:getHeight()
+        and cookie.y < y + height
+        ) 
+        then
+        return true
+    end
+
+    return false
+end
+
 function love.update(dt)
     --check for out of bounds of screen
-    if ((listOfRectangles[1].x > love.graphics.getWidth() - 30) or listOfRectangles[1].x < 0 or listOfRectangles[1].y > (love.graphics.getHeight() - 30) or listOfRectangles[1].y < 0) then
+    if (detectWallCollision(listOfRectangles[1].x, listOfRectangles[1].y)) then 
         gameOver = true
         return
     end
+
+    --check for cookie eater head and cookie collision
+    if (detectEat(listOfRectangles[1])) then
+        gameOver = true
+        return
+    end
+  
 
 
     for i = 2, #listOfRectangles do
@@ -123,7 +159,7 @@ end
 function love.draw()
    
     love.graphics.setColor(1,1,1,1) --ensures that image has no tinting
-    love.graphics.draw(cookieImage, 10, 10, 0, cookieImageScaleX, cookieImageScaleY)
+    love.graphics.draw(cookie.image, cookie.x, cookie.y)
 
     love.graphics.setColor(255, 255, 255)
     for i = #listOfRectangles, 2, -1 do
