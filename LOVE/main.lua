@@ -8,7 +8,7 @@ function love.load()
     cookieImage:setFilter("nearest", "nearest")
     math.randomseed(os.time()) --seed random generator as Lua's RNG is deterministic
     cookie = generateCookie()
-    listOfRectangles = {
+    cookieEater = {
         {
         image = cookieEaterImage,
         x = 0,
@@ -17,7 +17,7 @@ function love.load()
         width = 30
         },
     }
-    rectPositionHistory = {}
+    cookieEaterPositionHistory = {}
     direction = "right"
     speed = 0
     acceleration = 15
@@ -29,7 +29,7 @@ function love.load()
 end
 
 function createRect()
-    local lastRect = listOfRectangles[#listOfRectangles]
+    local lastRect = cookieEater[#cookieEater]
     rect = {}
     image = cookiePocketImage
     rect.x = lastRect.x
@@ -37,7 +37,7 @@ function createRect()
     rect.height = 18
     rect.width = 18
 
-    table.insert(listOfRectangles, rect)
+    table.insert(cookieEater, rect)
 end
 
 function detectWallCollision(x, y)
@@ -74,38 +74,53 @@ function generateCookie()
     }
 end
 
--- function detectSelfCollision(cookieEater)
---     local head = cookieEater[1]
---     print(head)
--- end
+function detectSelfCollision(cookieEater)
+    local head = cookieEater[1]
+    
+    for i = 5, #cookieEater do
+        local cookiePocket = cookieEater[i]
+
+        if (head.x < cookiePocket.x + cookiePocket.width
+        and cookiePocket.x < head.x + head.width
+        and head.y < cookiePocket.y + cookiePocket.height
+        and cookiePocket.y < head.y + head.height
+        ) 
+        then 
+            print(head.width, cookiePocket.width)
+            print(head.x, head.y, cookiePocket.x, cookiePocket.y)
+            return true
+        end
+    end
+    return false
+end
 
 function love.update(dt)
 
     --check for out of bounds of screen
-    if (detectWallCollision(listOfRectangles[1].x, listOfRectangles[1].y)) then 
+    if (detectWallCollision(cookieEater[1].x, cookieEater[1].y)) then 
         gameOver = true
         return
     end
 
     --check for cookie eater head and cookie collision
-    if (detectEat(listOfRectangles[1])) then
+    if (detectEat(cookieEater[1])) then
         score = score + 1
         cookie = generateCookie()
         createRect()
     end
 
     --check for cookie eater self-collision
-    -- if (detectSelfCollision(listOfRectangles)) then
-    --     gameOver = true
-    --     return
-    -- end
+    if (detectSelfCollision(cookieEater)) then
+        gameOver = true
+        return
+    end
 
-    for i = 2, #listOfRectangles do
-        local position = rectPositionHistory[i - 1]
+    for i = 2, #cookieEater do
+        local position = cookieEaterPositionHistory[i - 1]
 
         if (position) then
-            listOfRectangles[i].x = position.x
-            listOfRectangles[i].y = position.y
+            cookieEater[i].x = position.x
+            cookieEater[i].y = position.y
         end
     end
 
@@ -114,36 +129,36 @@ function love.update(dt)
 
     --set movement in the correct direction
     if (direction == "right") then
-       listOfRectangles[1].x = listOfRectangles[1].x + speed * dt
+       cookieEater[1].x = cookieEater[1].x + speed * dt
     end
 
     if (direction == "down") then
-        listOfRectangles[1].y = listOfRectangles[1].y + speed * dt
+        cookieEater[1].y = cookieEater[1].y + speed * dt
     end
 
     if (direction == "left") then
-        listOfRectangles[1].x = listOfRectangles[1].x - speed * dt
+        cookieEater[1].x = cookieEater[1].x - speed * dt
     end
 
     if (direction == "up") then
-        listOfRectangles[1].y = listOfRectangles[1].y - speed * dt
+        cookieEater[1].y = cookieEater[1].y - speed * dt
     end
 
 
     --create history of this point when the head has moved 15 pixels
-    local distanceX = listOfRectangles[1].x - prevXPoint
-    local distanceY = listOfRectangles[1].y - prevYPoint
+    local distanceX = cookieEater[1].x - prevXPoint
+    local distanceY = cookieEater[1].y - prevYPoint
     local distanceBetweenPoints = math.sqrt(distanceX*distanceX + distanceY*distanceY)
 
     if distanceBetweenPoints >= 15 then
-        table.insert(rectPositionHistory, 1, {x = listOfRectangles[1].x, y = listOfRectangles[1].y})
+        table.insert(cookieEaterPositionHistory, 1, {x = cookieEater[1].x, y = cookieEater[1].y})
 
-        prevXPoint = listOfRectangles[1].x
-        prevYPoint = listOfRectangles[1].y
+        prevXPoint = cookieEater[1].x
+        prevYPoint = cookieEater[1].y
     end
 
- if #rectPositionHistory > #listOfRectangles * 15 then
-        table.remove(rectPositionHistory)
+ if #cookieEaterPositionHistory > #cookieEater * 15 then
+        table.remove(cookieEaterPositionHistory)
     end
 
 
@@ -173,12 +188,12 @@ function love.draw()
     love.graphics.draw(cookie.image, cookie.x, cookie.y)
 
     love.graphics.setColor(255, 255, 255)
-    for i = #listOfRectangles, 2, -1 do
-        love.graphics.draw(cookiePocketImage, listOfRectangles[i].x, listOfRectangles[i].y)
+    for i = #cookieEater, 2, -1 do
+        love.graphics.draw(cookiePocketImage, cookieEater[i].x, cookieEater[i].y)
     end
 
     love.graphics.setColor(1,1,1,1) --ensures that image has no tinting
-    love.graphics.draw(listOfRectangles[1].image, listOfRectangles[1].x, listOfRectangles[1].y)
+    love.graphics.draw(cookieEater[1].image, cookieEater[1].x, cookieEater[1].y)
 
     if (gameOver == true) then
         love.graphics.setNewFont(20)
