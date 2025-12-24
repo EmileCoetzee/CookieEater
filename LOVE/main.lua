@@ -1,6 +1,13 @@
 function love.load()
-    cookieEaterImage = love.graphics.newImage("cookieEaterHead.png")
+    --image assets
+    cookieEaterImage = love.graphics.newImage("assets/cookieEaterHead.png")
     cookieEaterImage:setFilter("nearest", "nearest")
+    cookiePocketImage = love.graphics.newImage("assets/cookiePocket.png")
+    cookiePocketImage:setFilter("nearest", "nearest")
+    cookieImage = love.graphics.newImage("assets/cookie.png")
+    cookieImage:setFilter("nearest", "nearest")
+    cookieImageScaleX = 50 / cookieImage:getWidth()
+    cookieImageScaleY = 50 / cookieImage:getHeight()
     listOfRectangles = {
         {
         image = cookieEaterImage,
@@ -16,10 +23,6 @@ function love.load()
     acceleration = 15
     gameOver = false
     score = 0
-    cookieImage = love.graphics.newImage("cookie.png")
-    cookieImage:setFilter("nearest", "nearest")
-    cookieImageScaleX = 50 / cookieImage:getWidth()
-    cookieImageScaleY = 50 / cookieImage:getHeight()
     positionHistory = {}
     prevXPoint = 0 
     prevYPoint = 0
@@ -29,7 +32,7 @@ end
 function createRect()
     local lastRect = listOfRectangles[#listOfRectangles]
     rect = {}
-    image = nil
+    image = cookiePocketImage
     rect.x = lastRect.x
     rect.y = lastRect.y
     rect.height = 18
@@ -119,12 +122,12 @@ end
 
 function love.draw()
    
-   love.graphics.setColor(1,1,1,1) --ensures that image has no tinting
+    love.graphics.setColor(1,1,1,1) --ensures that image has no tinting
     love.graphics.draw(cookieImage, 10, 10, 0, cookieImageScaleX, cookieImageScaleY)
 
     love.graphics.setColor(255, 255, 255)
     for i = #listOfRectangles, 2, -1 do
-        love.graphics.rectangle("line", listOfRectangles[i].x, listOfRectangles[i].y, listOfRectangles[i].width, listOfRectangles[i].height)
+        love.graphics.draw(cookiePocketImage, listOfRectangles[i].x, listOfRectangles[i].y)
     end
 
     love.graphics.setColor(1,1,1,1) --ensures that image has no tinting
