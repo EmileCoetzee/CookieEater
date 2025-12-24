@@ -6,11 +6,7 @@ function love.load()
     cookiePocketImage:setFilter("nearest", "nearest")
     cookieImage = love.graphics.newImage("assets/cookiee.png")
     cookieImage:setFilter("nearest", "nearest")
-    cookie = {
-        image = cookieImage,
-        x = 100,
-        y = 100
-    }
+    cookie = generateCookie()
     listOfRectangles = {
         {
         image = cookieEaterImage,
@@ -70,6 +66,19 @@ function detectEat(cookieEaterHead)
     return false
 end
 
+function generateCookie()
+    return {
+        image = cookieImage,
+        x = math.random(0, love.graphics.getWidth() - 30),
+        y = math.random(0, love.graphics.getHeight() - 30)
+    }
+end
+
+function detectSelfCollision(cookieEater)
+    local head = cookieEater[1]
+    print(head)
+end
+
 function love.update(dt)
     --check for out of bounds of screen
     if (detectWallCollision(listOfRectangles[1].x, listOfRectangles[1].y)) then 
@@ -79,11 +88,16 @@ function love.update(dt)
 
     --check for cookie eater head and cookie collision
     if (detectEat(listOfRectangles[1])) then
+        score = score + 1
+        generateCookie()
+        createRect()
+    end
+
+    --check for cookie eater self-collision
+    if (detectSelfCollision(listOfRectangles)) then
         gameOver = true
         return
     end
-  
-
 
     for i = 2, #listOfRectangles do
         local position = rectPositionHistory[i - 1]
@@ -148,10 +162,6 @@ function love.keypressed(key)
     end
     if key == "right" then
         direction = "right"
-    end
-
-    if key == "space" then
-        createRect()
     end
 end
 
